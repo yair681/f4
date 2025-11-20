@@ -2,12 +2,15 @@
 
 const express = require('express');
 const router = express.Router();
-const Class = require('../models/Class'); // נתיב מתוקן
-const User = require('../models/User'); // נתיב מתוקן
-const { protect, adminOrTeacher } = require('../middleware/auth'); // נתיב למידלוור
+const Class = require('../models/Class'); // 💡 הנתיב תוקן
+const User = require('../models/User'); // 💡 הנתיב תוקן
+const { protect, adminOrTeacher } = require('../middleware/auth'); 
 
-// GET /api/classes
-// קבלת כל הכיתות (רק מורה/מנהל יכול)
+// ==================================================================
+// נתיבים (Routes) - (הקוד הפנימי נשאר זהה)
+// ==================================================================
+
+// GET /api/classes - קבלת כל הכיתות
 router.get('/', protect, adminOrTeacher(['admin', 'teacher']), async (req, res) => {
     try {
         const classes = await Class.find({}).populate('students', 'name email');
@@ -17,8 +20,7 @@ router.get('/', protect, adminOrTeacher(['admin', 'teacher']), async (req, res) 
     }
 });
 
-// POST /api/classes
-// יצירת כיתה חדשה (רק מורה/מנהל יכול)
+// POST /api/classes - יצירת כיתה חדשה
 router.post('/', protect, adminOrTeacher(['admin', 'teacher']), async (req, res) => {
     const { name } = req.body;
     try {
@@ -33,25 +35,17 @@ router.post('/', protect, adminOrTeacher(['admin', 'teacher']), async (req, res)
     }
 });
 
-// PUT /api/classes/:classId/enroll/:studentId
-// רישום תלמיד לכיתה
+// PUT /api/classes/:classId/enroll/:studentId - רישום תלמיד לכיתה
 router.put('/:classId/enroll/:studentId', protect, adminOrTeacher(['admin', 'teacher']), async (req, res) => {
     const { classId, studentId } = req.params;
     try {
         const targetClass = await Class.findById(classId);
         const student = await User.findById(studentId);
-
-        if (!targetClass) {
-            return res.status(404).json({ message: 'הכיתה לא נמצאה.' });
-        }
-        if (!student || student.role !== 'student') {
-            return res.status(404).json({ message: 'התלמיד לא נמצא או אינו תלמיד.' });
-        }
-
-        // ודא שהתלמיד עדיין לא רשום
-        if (targetClass.students.includes(studentId)) {
-            return res.status(400).json({ message: 'התלמיד כבר רשום לכיתה זו.' });
-        }
+        // ... לוגיקת בדיקות ועדכון ...
+        
+        if (!targetClass) { return res.status(404).json({ message: 'הכיתה לא נמצאה.' }); }
+        if (!student || student.role !== 'student') { return res.status(404).json({ message: 'התלמיד לא נמצא או אינו תלמיד.' }); }
+        if (targetClass.students.includes(studentId)) { return res.status(400).json({ message: 'התלמיד כבר רשום לכיתה זו.' }); }
 
         targetClass.students.push(studentId);
         await targetClass.save();
