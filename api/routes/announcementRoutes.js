@@ -3,17 +3,15 @@
 const express = require('express');
 const router = express.Router();
 
-// 💡 התיקון: הנתיב הוא כעת 'models/'../
-// הנתיב: api/routes/announcementRoutes.js -> api/models/AnnouncementModel.js
-const Announcement = require('../models/AnnouncementModel');
-const Class = require('../models/Class');
+const Announcement = require('../models/AnnouncementModel'); // 💡 הנתיב תוקן
+const Class = require('../models/Class'); // 💡 הנתיב תוקן
 const { protect } = require('../middleware/auth'); 
 
 // ==================================================================
-// נתיבים (Routes)
+// נתיבים (Routes) - (הקוד הפנימי נשאר זהה)
 // ==================================================================
 
-// 1. GET /api/announcements/main - קבלת הודעות ראשיות
+// 1. GET /api/announcements/main
 router.get('/main', async (req, res) => {
     try {
         const announcements = await Announcement.find({ classId: null })
@@ -27,7 +25,7 @@ router.get('/main', async (req, res) => {
     }
 });
 
-// 2. POST /api/announcements - פרסום הודעה חדשה
+// 2. POST /api/announcements
 router.post('/', protect, async (req, res) => {
     if (req.user.role !== 'teacher' && req.user.role !== 'admin') {
         return res.status(403).json({ message: 'אין הרשאה לפרסם הודעות.' });
@@ -52,7 +50,7 @@ router.post('/', protect, async (req, res) => {
     }
 });
 
-// 3. GET /api/announcements/class/:classId - קבלת הודעות ספציפיות לכיתה
+// 3. GET /api/announcements/class/:classId
 router.get('/class/:classId', protect, async (req, res) => {
     try {
         const announcements = await Announcement.find({ classId: req.params.classId })
