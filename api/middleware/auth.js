@@ -1,7 +1,7 @@
 // api/middleware/auth.js
 
 const jwt = require('jsonwebtoken');
-const User = require('../models/User'); // נתיב מתוקן ל-api/models
+const User = require('../models/User'); // 💡 הנתיב תוקן: יוצא מ-middleware ונכנס ל-models
 
 // פונקציית הגנה על נתיבים
 const protect = async (req, res, next) => {
@@ -9,13 +9,10 @@ const protect = async (req, res, next) => {
 
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         try {
-            // קבלת הטוקן מה-Header
             token = req.headers.authorization.split(' ')[1];
-
-            // אימות הטוקן
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-            // מציאת המשתמש לפי ה-ID בטוקן
+            
+            // מציאת המשתמש
             req.user = await User.findById(decoded.id).select('-password');
 
             if (!req.user) {
