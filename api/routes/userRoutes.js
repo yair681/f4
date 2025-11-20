@@ -2,35 +2,26 @@
 
 const express = require('express');
 const router = express.Router();
-const User = require('../models/User'); // נתיב מתוקן
-const { protect, adminOrTeacher } = require('../middleware/auth'); // נתיב למידלוור
+const User = require('../models/User'); // 💡 הנתיב תוקן
+const { protect, adminOrTeacher } = require('../middleware/auth'); 
 
-// POST /api/users
-// יצירת משתמש חדש (רק מנהל יכול)
+// ==================================================================
+// נתיבים (Routes) - (הקוד הפנימי נשאר זהה)
+// ==================================================================
+
+// POST /api/users - יצירת משתמש חדש (רק מנהל יכול)
 router.post('/', protect, adminOrTeacher(['admin']), async (req, res) => {
     const { name, email, password, role } = req.body;
-
+    // ... לוגיקה ...
     try {
         const userExists = await User.findOne({ email });
-
         if (userExists) {
             return res.status(400).json({ message: 'משתמש עם אימייל זה כבר קיים.' });
         }
-
-        const user = await User.create({
-            name,
-            email,
-            password,
-            role,
-        });
-
+        const user = await User.create({ name, email, password, role });
         if (user) {
             res.status(201).json({
-                _id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                message: 'המשתמש נוצר בהצלחה.'
+                _id: user._id, name: user.name, email: user.email, role: user.role, message: 'המשתמש נוצר בהצלחה.'
             });
         } else {
             res.status(400).json({ message: 'נתוני משתמש לא תקינים.' });
@@ -41,8 +32,7 @@ router.post('/', protect, adminOrTeacher(['admin']), async (req, res) => {
     }
 });
 
-// GET /api/users/students
-// קבלת רשימת תלמידים (לצורך רישום כיתה)
+// GET /api/users/students - קבלת רשימת תלמידים
 router.get('/students', protect, adminOrTeacher(['admin', 'teacher']), async (req, res) => {
     try {
         const students = await User.find({ role: 'student' }).select('name email');
@@ -52,8 +42,7 @@ router.get('/students', protect, adminOrTeacher(['admin', 'teacher']), async (re
     }
 });
 
-// GET /api/users
-// קבלת כל המשתמשים (רק מנהל יכול)
+// GET /api/users - קבלת כל המשתמשים
 router.get('/', protect, adminOrTeacher(['admin']), async (req, res) => {
     try {
         const users = await User.find({}).select('-password');
